@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flappy Piggy 2: The Sequel</title>
+    <link rel="stylesheet" href="style.css">
+    <script type="importmap">
+    {
+      "imports": {
+        "gsap": "https://cdn.jsdelivr.net/npm/gsap@3.12.5/index.js"
+      }
+    }
+    </script>
+</head>
+<body>
+    <div id="filterContainer"> <!-- New wrapper for SVG filters -->
+        <svg style="display:none;">
+            <filter id="gba-colors">
+                <!-- Reduce color palette by posterizing each channel -->
+                <feComponentTransfer>
+                    <feFuncR type="discrete" tableValues="0.0 0.33 0.66 1.0"></feFuncR>
+                    <feFuncG type="discrete" tableValues="0.0 0.33 0.66 1.0"></feFuncG>
+                    <feFuncB type="discrete" tableValues="0.0 0.33 0.66 1.0"></feFuncB>
+                </feComponentTransfer>
+                <!-- Adjust saturation and contrast for a more retro feel -->
+                <feColorMatrix type="saturate" values="1.4"/>
+            </filter>
+        </svg>
+    </div>
+    <div id="gameContainer">
+        <!-- video element retained but hidden and without a src so there's no background video -->
+        <video id="backgroundVideo" muted playsinline style="display:none;"></video>
+        <div id="gameAndUiWrapper"> <!-- New wrapper for canvas and UI -->
+            <canvas id="gameCanvas"></canvas>
+            
+            <div id="uiLayer">
+                <div id="loadingScreen">
+                    <img src="/blinkingcorppigloading.gif" alt="Loading..." id="loadingGif">
+                    <p>Loading Game...</p>
+                </div>
+
+                <div id="scoreDisplay">Score: 0</div>
+                
+                <div id="boostMeter">
+                    <svg id="boostCircle" width="100" height="100" viewBox="0 0 100 100">
+                        <circle class="boost-bg" cx="50" cy="50" r="45" />
+                        <circle class="boost-bar" cx="50" cy="50" r="45" />
+                    </svg>
+                    <span id="boostValue">100</span>
+                </div>
+
+                <div id="levelNameDisplay"></div>
+
+                <div id="multiplayerPanel" aria-live="polite" title="Multiplayer Players">
+                    <h3>Players</h3>
+                    <div id="multiplayerList"></div>
+                </div>
+
+                <div id="startScreen">
+                    <h1>Flappy Piggy 2: The Sequel</h1>
+                    <img src="/windows-media-player-button-icon-7.png" id="startButton" alt="Start Random Game" title="Start Random Game">
+                    <p>Click Image or Press Space for Random Game</p>
+                    <button id="playLevelsButton" class="menu-button">Play Levels</button>
+                    <p id="highScoreStartDisplay">High Score: 0</p>
+                </div>
+
+                <div id="levelSelectScreen">
+                    <h2>Select a Level</h2>
+                    <div id="levelListContainer">
+                        <!-- Level buttons will be populated by JS -->
+                    </div>
+                    <button id="backToMainMenuButton" class="menu-button">Back to Main Menu</button>
+                </div>
+
+                <div id="gameOverScreen">
+                    <h2>Game Over!</h2>
+                    <img src="/smg3_render__by_hugoofficiazd_dfsr6tw-pre.png" alt="SMG3" id="sadPigImage">
+                    <p>Final Score: <span id="finalScore">0</span></p>
+                    <p id="highScoreGameOverDisplay">High Score: 0</p>
+                    <p id="newHighScoreMessage" class="new-highscore-popup">New High Score!</p>
+                    <img src="/bprestart.png" id="restartButton" alt="Restart Game" title="Restart Game">
+                    <button id="mainMenuButton" class="gameover-button">Main Menu</button>
+                </div>
+
+                <div id="tutorialScreen" style="display: none;">
+                    <p id="tutorialText">Welcome to the tutorial!</p>
+                    <button id="skipTutorialButton" class="tutorial-button">Skip Tutorial</button>
+                    <button id="nextTutorialStepButton" class="tutorial-button">Next</button>
+                    <button id="startTutorialGameButton" class="tutorial-button">Start Game!</button>
+                </div>
+
+                <!-- Fatal error overlay (hidden by default) -->
+                <div id="fatalErrorOverlay" aria-live="assertive" style="display:none; position:absolute; inset:0; background:#000; color:#fff; z-index:100; pointer-events:all; justify-content:center; align-items:center; flex-direction:column; text-align:center; padding:20px;">
+                    <img id="fatalErrorImage" src="/R_FALL.png" alt="Error" style="width:120px;height:auto;margin-bottom:18px;">
+                    <h2 style="margin:0 0 8px 0;">Oops!!</h2>
+                    <pre id="fatalErrorText" style="white-space:pre-wrap; word-break:break-word; max-height:50vh; overflow:auto; text-align:left; width:100%; max-width:720px;"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="module" src="script.js"></script>
+</body>
+</html>

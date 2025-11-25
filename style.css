@@ -1,0 +1,487 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #000; /* Black background for letterboxing */
+    font-family: 'Arial', sans-serif;
+    overflow: hidden; /* Prevents scrollbars */
+}
+
+/* GBA-inspired Color Palette */
+:root {
+    --gba-bg-dark: #20183b;
+    --gba-bg-dark-transparent: rgba(32, 24, 59, 0.85);
+    --gba-border: #40385b;
+    --gba-text-light: #e0e0e0;
+    --gba-purple: #8a42e1;
+    --gba-purple-dark: #6a22c1;
+    --gba-green: #32cd32;
+    --gba-green-dark: #229d22;
+    --gba-yellow: #ffd700;
+    --gba-red: #ff5579;
+    --gba-orange: #ff9800;
+    --gba-orange-dark: #f57c00;
+}
+
+#gameContainer {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: none;
+    box-shadow: none;
+}
+
+#backgroundVideo {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -1;
+}
+
+#gameAndUiWrapper {
+    position: relative;
+    /* Width and height will be set by JS to match window */
+}
+
+#gameCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: block; /* Removes extra space below canvas */
+    background-color: transparent; /* Show video behind */
+    width: 100%;
+    height: 100%;
+    /* Removed retro color filter effect */
+    /* filter: url(#gba-colors) saturate(1.2) contrast(1.1); */
+}
+
+#uiLayer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    pointer-events: none; /* Allow clicks to pass through to canvas unless on a button */
+}
+
+#loadingScreen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.85);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    z-index: 30; /* Highest z-index to cover everything */
+    pointer-events: all; /* Capture clicks on this screen */
+}
+
+#loadingScreen img#loadingGif {
+    width: 120px; /* Adjust as needed */
+    height: auto;
+    margin-bottom: 20px;
+}
+
+#loadingScreen p {
+    font-size: 1.5em;
+    text-shadow: 1px 1px 2px #000;
+}
+
+#scoreDisplay {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--gba-text-light);
+    text-shadow: 2px 2px 4px #000000;
+    z-index: 10;
+    display: none; /* Shown when game starts */
+}
+
+#boostMeter {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: 80px;
+    height: 80px;
+    z-index: 10;
+    display: none; /* Hidden by default, shown by game.js */
+    color: var(--gba-text-light);
+    text-shadow: 1px 1px 2px #000;
+}
+
+#boostMeter #boostCircle {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg); /* Start from the top */
+}
+
+#boostMeter circle {
+    fill: transparent;
+    stroke-width: 10;
+}
+
+#boostMeter .boost-bg {
+    stroke: rgba(0, 0, 0, 0.3);
+}
+
+#boostMeter .boost-bar {
+    stroke: var(--gba-green); /* Green for available boost */
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.1s linear;
+}
+
+#boostMeter #boostValue {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 24px;
+    font-weight: bold;
+}
+
+#boostMeter.boosting .boost-bar {
+    stroke: var(--gba-yellow); /* Yellow when boosting */
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        filter: drop-shadow(0 0 2px var(--gba-yellow));
+    }
+    50% {
+        filter: drop-shadow(0 0 8px var(--gba-yellow));
+    }
+    100% {
+        filter: drop-shadow(0 0 2px var(--gba-yellow));
+    }
+}
+
+#levelNameDisplay {
+    position: absolute;
+    top: 20px; /* Adjust if score is also shown or position differently */
+    right: 20px;
+    font-size: 16px;
+    font-weight: bold;
+    color: var(--gba-text-light);
+    text-shadow: 1px 1px 2px #000000;
+    z-index: 10;
+    display: none; /* Shown during level play */
+}
+
+#speedMultiplierDisplay {
+    display: none; /* This element is no longer used */
+}
+
+#startScreen, #gameOverScreen, #tutorialScreen, #levelSelectScreen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--gba-bg-dark-transparent);
+    color: var(--gba-text-light);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    z-index: 20;
+    pointer-events: all; /* Capture clicks on these screens */
+}
+
+#startScreen h1 {
+    font-size: 3em;
+    margin-bottom: 20px;
+    text-shadow: 3px 3px 5px #000;
+}
+
+#startScreen p {
+    font-size: 1.2em;
+    margin-top: 10px; /* Adjusted margin */
+}
+
+#highScoreStartDisplay {
+    font-size: 1.1em;
+    margin-top: 15px;
+    color: var(--gba-yellow); /* Gold color for high score */
+    text-shadow: 1px 1px 2px #000;
+}
+
+#startButton {
+    width: 100px;
+    height: 100px;
+    cursor: pointer;
+    border: none;
+    background-color: transparent;
+    transition: transform 0.1s ease-out;
+    margin-top: 10px; /* Added some margin */
+}
+#startButton:hover {
+    transform: scale(1.1);
+}
+
+.menu-button {
+    background-color: var(--gba-purple); /* Blue */
+    border: 2px solid var(--gba-border);
+    color: var(--gba-text-light);
+    padding: 12px 28px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 1.1em;
+    margin: 10px 5px;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: background-color 0.3s ease, transform 0.1s ease;
+    pointer-events: all;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
+}
+
+.menu-button:hover {
+    background-color: var(--gba-purple-dark); /* Darker Blue */
+    transform: scale(1.05);
+}
+
+
+#gameOverScreen h2 {
+    font-size: 2.5em;
+    margin-bottom: 10px; /* Adjusted margin */
+    color: var(--gba-red);
+    text-shadow: 2px 2px 3px #333;
+}
+
+#sadPigImage {
+    width: 100px;
+    height: auto;
+    margin-bottom: 10px; /* Adjusted margin */
+}
+
+#gameOverScreen p {
+    font-size: 1.5em;
+    margin-bottom: 10px; /* Adjusted margin */
+}
+
+#highScoreGameOverDisplay {
+    font-size: 1.2em;
+    color: var(--gba-yellow); /* Gold color */
+    margin-bottom: 10px;
+    text-shadow: 1px 1px 2px #000;
+}
+
+#newHighScoreMessage {
+    font-size: 1.3em;
+    color: var(--gba-yellow); /* Bright Yellow */
+    font-weight: bold;
+    margin-bottom: 15px;
+    text-shadow: 2px 2px 4px #000;
+    display: none; /* Hidden by default */
+}
+
+.new-highscore-popup { /* Class for animation */
+    /* Pop-up animation will be handled by GSAP */
+}
+
+#gameOverScreen .gameover-button { 
+    background-color: var(--gba-purple); 
+    border: 2px solid var(--gba-border);
+    color: var(--gba-text-light);
+    padding: 12px 28px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 1em; 
+    margin: 8px 4px;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: background-color 0.3s ease, transform 0.1s ease;
+    pointer-events: all; 
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
+}
+
+#gameOverScreen .gameover-button:hover {
+    background-color: var(--gba-purple-dark);
+    transform: scale(1.05);
+}
+
+#restartButton {
+    width: 80px;
+    height: 80px;
+    cursor: pointer;
+    border: none;
+    background-color: transparent;
+    transition: transform 0.1s ease-out;
+    margin-top: 10px; 
+    margin-bottom: 5px; 
+}
+
+#restartButton:hover {
+    transform: scale(1.1);
+}
+
+#mainMenuButton {
+    margin-top: 5px; 
+}
+
+#tutorialScreen {
+    display: none; /* Hidden by default */
+}
+
+#tutorialText {
+    font-size: 1.4em;
+    margin: 20px;
+    line-height: 1.6;
+    max-width: 80%;
+}
+
+.tutorial-button {
+    background-color: var(--gba-green);
+    border: 2px solid var(--gba-border);
+    color: var(--gba-text-light);
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 10px 5px;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background-color 0.3s ease, transform 0.1s ease;
+    pointer-events: all;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
+}
+
+.tutorial-button:hover {
+    background-color: var(--gba-green-dark);
+    transform: scale(1.05);
+}
+
+#levelSelectScreen {
+    display: none; /* Hidden by default */
+}
+
+#levelSelectScreen h2 {
+    font-size: 2.2em;
+    margin-bottom: 25px;
+    text-shadow: 2px 2px 4px #333;
+}
+
+#levelListContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 60%;
+    overflow-y: auto;
+    padding: 10px;
+    border: 2px solid var(--gba-border);
+    border-radius: 8px;
+    background-color: rgba(0,0,0,0.2);
+    min-width: 70%;
+}
+
+.level-button {
+    background-color: var(--gba-orange);
+    border: 2px solid var(--gba-border);
+    color: var(--gba-text-light);
+    padding: 15px 25px;
+    text-align: center;
+    text-decoration: none;
+    display: block;
+    font-size: 1.1em;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s ease, transform 0.1s ease;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
+}
+
+.level-button:hover {
+    background-color: var(--gba-orange-dark);
+    transform: scale(1.03);
+}
+
+#multiplayerPanel {
+    position: absolute;
+    bottom: 16px;
+    left: 16px;
+    width: 160px;
+    max-height: 220px;
+    overflow-y: auto;
+    background-color: rgba(0,0,0,0.45);
+    color: var(--gba-text-light);
+    border: 1px solid var(--gba-border);
+    border-radius: 8px;
+    padding: 8px;
+    z-index: 12;
+    pointer-events: all;
+    font-size: 13px;
+    text-align: left;
+}
+
+#multiplayerPanel h3 {
+    margin: 0 0 6px 0;
+    font-size: 14px;
+    text-align: center;
+    color: var(--gba-yellow);
+}
+
+#multiplayerList {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.multiplayer-entry {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px;
+    background: rgba(255,255,255,0.02);
+    border-radius: 6px;
+}
+
+.multiplayer-entry img {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid rgba(0,0,0,0.5);
+}
+
+.multiplayer-entry .mp-name {
+    flex: 1;
+    font-weight: bold;
+    color: var(--gba-text-light);
+}
+
+.multiplayer-entry .mp-score {
+    font-size: 12px;
+    color: var(--gba-green);
+}
+
+
+/* Initially hide game elements that are shown by JS */
+#gameOverScreen {
+    display: none;
+}
